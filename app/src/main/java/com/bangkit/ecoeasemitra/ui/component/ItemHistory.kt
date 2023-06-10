@@ -36,13 +36,7 @@ fun ItemHistory(
     Card(
         border = BorderStroke(
             width = 1.dp,
-            color = when(statusItemHistory){
-                StatusOrderItem.NOT_TAKEN -> BlueSecondary
-                StatusOrderItem.TAKEN -> DarkTosca
-                StatusOrderItem.ON_PROCESS -> GreenSecondary
-                StatusOrderItem.FINISHED-> GreenPrimary
-                StatusOrderItem.CANCELED -> OrangeAccent
-            }
+            color = DarkGrey
         ),
         shape = RoundedCornerShape(16.dp)
     ) {
@@ -88,7 +82,7 @@ fun ItemHistory(
                 Box(modifier = Modifier.width(16.dp))
                 StatusOrder(statusItemHistory = statusItemHistory)
                 Box(modifier = Modifier.weight(1f))
-                PillWidget(color = MaterialTheme.colors.primary, text = stringResource(R.string.detail), textColor = MaterialTheme.colors.onBackground, modifier = Modifier.clickable { onClickDetail() })
+                PillWidget(color = LightGrey, text = stringResource(R.string.detail), textColor = MaterialTheme.colors.onBackground, modifier = Modifier.clickable { onClickDetail() })
             }
         }
     }

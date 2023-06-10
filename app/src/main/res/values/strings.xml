@@ -47,4 +47,5 @@
     <string name="finished">selesai</string>
     <string name="register">registrasi</string>
     <string name="take_order">ambil order</string>
+    <string name="check_order_history">lihat history order</string>
 </resources>

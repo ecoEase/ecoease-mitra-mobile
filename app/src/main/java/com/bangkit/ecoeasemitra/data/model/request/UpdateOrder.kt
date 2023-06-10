@@ -5,5 +5,5 @@ import com.bangkit.ecoeasemitra.data.room.model.StatusOrderItem
 data class UpdateOrder(
     val id: String,
     val status: StatusOrderItem,
-    val mitraId: String? = null,
+    val mitra_id: String? = null,
 )

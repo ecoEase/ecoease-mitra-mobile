@@ -5,6 +5,8 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.bangkit.ecoeasemitra.data.event.MyEvent
 import com.bangkit.ecoeasemitra.data.model.request.FCMNotification
+import com.bangkit.ecoeasemitra.data.remote.responseModel.chatroom.ChatRoomItem
+import com.bangkit.ecoeasemitra.data.remote.responseModel.chatroom.ChatroomResponse
 import com.bangkit.ecoeasemitra.data.repository.MainRepository
 import com.bangkit.ecoeasemitra.data.room.model.User
 import com.bangkit.ecoeasemitra.ui.common.UiState
@@ -19,8 +21,12 @@ class MessageViewModel(private val repository: MainRepository) : ViewModel() {
     private val eventChannel = Channel<MyEvent>()
     val eventFlow = eventChannel.receiveAsFlow()
     private var _user: MutableStateFlow<UiState<User>> = MutableStateFlow(UiState.Loading)
+    private var _chatrooms: MutableStateFlow<UiState<List<ChatRoomItem>>> =
+        MutableStateFlow(UiState.Loading)
     val user: StateFlow<UiState<User>> = _user
+    val chatrooms: StateFlow<UiState<List<ChatRoomItem>>> = _chatrooms
 
+    // TODO: add on reload chatrooms 
     fun getCurrentUser() {
         viewModelScope.launch(Dispatchers.IO) {
             try {
@@ -67,32 +73,34 @@ class MessageViewModel(private val repository: MainRepository) : ViewModel() {
         }
     }
 
-    fun deleteChatroom(roomKey: String, roomId: String, onSuccess: () -> Unit){
+    fun deleteChatroom(roomKey: String, roomId: String, onSuccess: () -> Unit) {
         viewModelScope.launch(Dispatchers.IO) {
             try {
-                repository.deleteChatroom(roomKey, roomId).catch {error ->
+                repository.deleteChatroom(roomKey, roomId).catch { error ->
                     eventChannel.send(MyEvent.MessageEvent("error: ${error.message}"))
-                }.collect{
+                }.collect {
                     eventChannel.send(MyEvent.MessageEvent("success delete chat room"))
-                    withContext(Dispatchers.IO){
+                    withContext(Dispatchers.IO) {
                         onSuccess()
                     }
                 }
-            }catch (e: Exception){
+            } catch (e: Exception) {
                 eventChannel.send(MyEvent.MessageEvent("error: ${e.message}"))
             }
         }
     }
 
-    fun getChatrooms(){
+    fun getChatrooms() {
         viewModelScope.launch(Dispatchers.IO) {
             try {
-                repository.getChatRooms().catch {error ->
+                repository.getChatRooms().catch { error ->
+                    _chatrooms.value = UiState.Error("error: ${error.message}")
                     eventChannel.send(MyEvent.MessageEvent("error: ${error.message}"))
-                }.collect{
-                    eventChannel.send(MyEvent.MessageEvent("success delete chat room"))
+                }.collect {
+                    _chatrooms.value = UiState.Success(it)
                 }
-            }catch (e: Exception){
+            } catch (e: Exception) {
+                _chatrooms.value = UiState.Error("error: ${e.message}")
                 eventChannel.send(MyEvent.MessageEvent("error: ${e.message}"))
             }
         }

@@ -24,10 +24,13 @@ import com.bangkit.ecoeasemitra.data.event.MyEvent
 import com.bangkit.ecoeasemitra.data.firebase.FireBaseRealtimeDatabase
 import com.bangkit.ecoeasemitra.data.firebase.FireBaseRealtimeDatabase.getAllRoomsKey
 import com.bangkit.ecoeasemitra.data.model.Chatroom
+import com.bangkit.ecoeasemitra.data.remote.responseModel.chatroom.ChatRoomItem
 import com.bangkit.ecoeasemitra.helper.generateUUID
+import com.bangkit.ecoeasemitra.ui.common.UiState
 import com.bangkit.ecoeasemitra.ui.component.Avatar
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterialApi::class)
@@ -35,6 +38,7 @@ import kotlinx.coroutines.launch
 fun UsersChatsScreen(
     navHostController: NavHostController,
     onLoadChatRooms: () -> Unit,
+    chatroomsUiState: StateFlow<UiState<List<ChatRoomItem>>>,
     onDeleteRoom: (id: String, key: String) -> Unit,
     eventFlow: Flow<MyEvent>,
     modifier: Modifier = Modifier
@@ -101,41 +105,54 @@ fun UsersChatsScreen(
                 .fillMaxSize()
                 .padding(horizontal = 32.dp)
         ) {
-            if (loading) CircularProgressIndicator(modifier = Modifier.align(Alignment.CenterHorizontally))
-            AnimatedVisibility(
-                visible = !loading, modifier = Modifier
-                    .weight(1f)
-                    .fillMaxWidth()
-            ) {
-                LazyColumn(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                    items(rooms.toList(), key = { it.key ?: generateUUID() }) { room ->
-                        Column {
-                            Row(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .clickable {
-                                        room?.let {
-                                            Screen.ChatRoom.setTitle(it.key)
-                                            val roomChatRoute = Screen.ChatRoom.createRoute(it.value ?: "")
-                                            navHostController.navigate(roomChatRoute)
+//            if (loading) CircularProgressIndicator(modifier = Modifier.align(Alignment.CenterHorizontally))
+            chatroomsUiState.collectAsState(initial = UiState.Loading).value.let {uiState ->
+                when(uiState){
+                    is UiState.Loading -> {
+                        CircularProgressIndicator(modifier = Modifier.align(Alignment.CenterHorizontally))
+                        onLoadChatRooms()
+                    }
+                    is UiState.Success -> {
+                        AnimatedVisibility(
+                            visible = !loading, modifier = Modifier
+                                .weight(1f)
+                                .fillMaxWidth()
+                        ) {
+                            LazyColumn(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                                items(uiState.data.toList(), key = { it.id ?: generateUUID() }) { room ->
+                                    Column {
+                                        Row(
+                                            modifier = Modifier
+                                                .fillMaxWidth()
+                                                .clickable {
+                                                    room?.let {
+                                                        Screen.ChatRoom.setTitle("${room.user.firstName} ${room.user.lastName}")
+                                                        val roomChatRoute =
+                                                            Screen.ChatRoom.createRoute(it.id ?: "")
+                                                        navHostController.navigate(roomChatRoute)
+                                                    }
+                                                },
+                                            horizontalArrangement = Arrangement.spacedBy(16.dp)
+                                        )
+                                        {
+                                            Avatar(imageUrl = room.user.urlPhotoProfile)
+                                            Text(text = "${room.user.firstName} ${room.user.lastName}")
                                         }
-                                    },
-                                horizontalArrangement = Arrangement.spacedBy(16.dp)
-                            )
-                            {
-                                Avatar(imageUrl = "https://images.unsplash.com/photo-1596815064285-45ed8a9c0463?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=366&q=80")
-                                Text(text = room.value ?: "")
-
-                            }
-                            IconButton(onClick = {
-                                onDeleteRoom(room.key, room.value ?: "")
-                            }) {
-                                Icon(
-                                    imageVector = Icons.Default.Delete,
-                                    contentDescription = "delete"
-                                )
+//                                        IconButton(onClick = {
+//                                            onDeleteRoom(room.key, room.value ?: "")
+//                                        }) {
+//                                            Icon(
+//                                                imageVector = Icons.Default.Delete,
+//                                                contentDescription = "delete"
+//                                            )
+//                                        }
+                                    }
+                                }
                             }
                         }
+                    }
+                    is UiState.Error -> {
+                        Text(uiState.errorMessage)
                     }
                 }
             }

@@ -182,7 +182,13 @@ class OrderViewModel(private val repository: MainRepository) : ViewModel() {
     ) {
         viewModelScope.launch(Dispatchers.IO) {
             try {
-                repository.cancelOrderStatus(order = order, statusOrderItem = statusOrderItem)
+                when(statusOrderItem){
+                    StatusOrderItem.TAKEN -> repository.pickupOrder(order = order)
+                    StatusOrderItem.ON_PROCESS -> repository.updateOrderStatus(order = order, statusOrderItem = statusOrderItem)
+                    StatusOrderItem.FINISHED -> repository.updateOrderStatus(order = order, statusOrderItem = statusOrderItem)
+                    StatusOrderItem.CANCELED -> repository.cancelOrderStatus(order = order, statusOrderItem = statusOrderItem)
+                    else -> eventChannel.send(MyEvent.MessageEvent("error: can't update order to not taken!"))
+                }
                 eventChannel.send(MyEvent.MessageEvent("success update order"))
                 withContext(Dispatchers.Main){
                     onSuccess()

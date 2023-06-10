@@ -214,7 +214,7 @@ private fun DetailOrder(
     Column(
         modifier = modifier
             .fillMaxWidth()
-            .padding(bottom = 64.dp, top = 16.dp)
+            .padding(bottom = 32.dp, top = 16.dp)
             .padding(horizontal = 32.dp),
         verticalArrangement = Arrangement.spacedBy(4.dp),
     ) {

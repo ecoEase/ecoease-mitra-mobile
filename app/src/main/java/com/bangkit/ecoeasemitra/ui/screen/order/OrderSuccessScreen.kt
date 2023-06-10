@@ -26,8 +26,9 @@ import com.bangkit.ecoeasemitra.ui.theme.EcoEaseTheme
 import com.bangkit.ecoeasemitra.ui.theme.GreenPrimary
 
 @Composable
-fun OrderSuccessScreen(
+fun SuccessScreen(
     navHostController: NavHostController,
+    title: String,
     modifier: Modifier = Modifier
 ) {
     val composition by rememberLottieComposition(
@@ -51,7 +52,7 @@ fun OrderSuccessScreen(
             progress = { progress }
         )
         Text(
-            text = stringResource(R.string.create_order_success),
+            text = title,
             modifier = modifier.fillMaxWidth(),
             style = MaterialTheme.typography.subtitle1.copy(
                 textAlign = TextAlign.Center,
@@ -68,14 +69,14 @@ fun OrderSuccessScreen(
                 type = RoundedButtonType.SECONDARY,
                 onClick = {
                     navHostController.navigate(Screen.Home.route) {
-                        popUpTo(Screen.PickupOrderSuccess.route) {
+                        popUpTo(Screen.Success.route) {
                             inclusive = true
                         }
                     }
                 })
-            RoundedButton(text = stringResource(R.string.check_on_map), onClick = {
-                navHostController.navigate(Screen.Map.route) {
-                    popUpTo(Screen.PickupOrderSuccess.route) {
+            RoundedButton(text = stringResource(R.string.check_order_history), onClick = {
+                navHostController.navigate(Screen.History.route) {
+                    popUpTo(Screen.Success.route) {
                         inclusive = true
                     }
                 }
@@ -88,6 +89,6 @@ fun OrderSuccessScreen(
 @Composable
 fun OrderScreenSuccessPreview() {
     EcoEaseTheme {
-        OrderSuccessScreen(navHostController = rememberNavController())
+        SuccessScreen(navHostController = rememberNavController(), title = "test")
     }
 }

@@ -34,7 +34,7 @@ import com.bangkit.ecoeasemitra.ui.screen.dashboard.DashboardScreen
 import com.bangkit.ecoeasemitra.ui.screen.onboard.OnBoardingScreen
 import com.bangkit.ecoeasemitra.ui.screen.order.DetailOrderScreen
 import com.bangkit.ecoeasemitra.ui.screen.order.OrderHistoryScreen
-import com.bangkit.ecoeasemitra.ui.screen.order.OrderSuccessScreen
+import com.bangkit.ecoeasemitra.ui.screen.order.SuccessScreen
 import com.bangkit.ecoeasemitra.ui.screen.register.RegisterScreen
 import com.bangkit.ecoeasemitra.ui.theme.EcoEaseTheme
 
@@ -48,12 +48,10 @@ val listNoTopBar = listOf(
     Screen.Onboard,
     Screen.Auth,
     Screen.Register,
-    Screen.PickupOrderSuccess
+    Screen.Success
 )
 class MainActivity : ComponentActivity() {
     private lateinit var registerViewModel: RegisterViewModel
-
-
 
     override fun onCreate(savedInstanceState: Bundle?) {
         val splashViewModel = ViewModelFactory(Injection.provideInjection(this)).create(SplashViewModel::class.java)
@@ -137,7 +135,6 @@ class MainActivity : ComponentActivity() {
                                     onReloadGarbage = { garbageViewModel.reloadGarbage() },
                                 )
                             }
-
                             composable(Screen.History.route){
                                 OrderHistoryScreen(
                                     orderHistoryState = orderViewModel.orderHistoryState,
@@ -212,8 +209,12 @@ class MainActivity : ComponentActivity() {
                                     }
                                 )
                             }
-                            composable(Screen.PickupOrderSuccess.route){
-                                OrderSuccessScreen(navHostController = navController)
+                            composable(
+                                route = Screen.Success.route,
+                                arguments = listOf(navArgument("title"){type = NavType.StringType}),
+                            ){
+                                val title = it.arguments?.getString("title") ?: ""
+                                SuccessScreen(navHostController = navController, title = title)
                             }
                             composable(
                                 route = Screen.DetailOrder.route,
@@ -222,17 +223,12 @@ class MainActivity : ComponentActivity() {
                                 val orderId = it.arguments?.getString("orderId") ?: ""
                                 DetailOrderScreen(
                                     orderId = orderId,
+                                    navHostController = navController,
                                     userStateFlow = orderViewModel.myUserData,
                                     orderDetailStateFlow = orderViewModel.detailOrderState,
                                     onLoadDetailOrder = { id -> orderViewModel.loadDetailOrder(id) },
                                     onReloadDetailOrder = { orderViewModel.reloadDetailOrder() },
-                                    onUpdateOrderStatus = { order, status -> orderViewModel.updateOrder(order, status, onSuccess = {
-                                        navController.navigate(Screen.History.route){
-                                            popUpTo(Screen.DetailOrder.createRoute(orderId)){
-                                                inclusive = true
-                                            }
-                                        }
-                                    }) },
+                                    onUpdateOrderStatus = { order, status, onSuccess -> orderViewModel.updateOrder(order, status, onSuccess) },
                                     eventFlow = orderViewModel.eventFlow,
                                     createChatroomEventFlow = messageViewModel.eventFlow,
                                     onCreateNewChatroom = { userId -> messageViewModel.createChatroom(userId) },
@@ -241,7 +237,8 @@ class MainActivity : ComponentActivity() {
                             composable(Screen.UsersChats.route){
                                 UsersChatsScreen(
                                     navHostController = navController,
-                                    onLoadChatRooms = {},
+                                    onLoadChatRooms = {messageViewModel.getChatrooms()},
+                                    chatroomsUiState = messageViewModel.chatrooms,
                                     eventFlow = messageViewModel.eventFlow,
                                     onDeleteRoom = { roomKey, roomId -> messageViewModel.deleteChatroom(roomKey, roomId, onSuccess = {
                                     // TODO: add onsuccess

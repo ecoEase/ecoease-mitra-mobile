@@ -21,7 +21,6 @@ import com.bangkit.ecoeasemitra.data.room.model.Address
 import com.bangkit.ecoeasemitra.data.room.model.Order
 import com.bangkit.ecoeasemitra.helper.toOrderWithDetailTransaction
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flowOf
 
@@ -90,7 +89,8 @@ class MainRepository(
     suspend fun loginMitra(loginData: Login): Flow<UserData> {
         try {
             val response = mitraApiService.login(loginData)
-            response.data?.let {11
+            response.data?.let {
+                11
                 val userData = it
                 roomDatabase.userDao().deleteAll()
                 roomDatabase.userDao().addUser(userData.toUser())
@@ -203,15 +203,17 @@ class MainRepository(
             val userId = roomDatabase.userDao().getUser().id
             val response = addressApiService.getAll(token = token, userId = userId)
 
-            if(response.data == null) throw Exception(response.message)
+            if (response.data == null) throw Exception(response.message)
 
             roomDatabase.addressDao().deleteAllAddress()
             response.data.forEach { address ->
-                roomDatabase.addressDao().addAddress(address.toAddress() )
+                roomDatabase.addressDao().addAddress(address.toAddress())
             }
             return flowOf(roomDatabase.addressDao().getSelectedAddress())
         } catch (e: Exception) {
-            if(roomDatabase.addressDao().getSelectedAddress() != null) return flowOf(roomDatabase.addressDao().getSelectedAddress())
+            if (roomDatabase.addressDao()
+                    .getSelectedAddress() != null
+            ) return flowOf(roomDatabase.addressDao().getSelectedAddress())
             throw e
         }
     }
@@ -237,13 +239,9 @@ class MainRepository(
         try {
             val token = datastore.getAuthToken().first()
             val response = orderApiService.getByMitra(token, mitraId)
-
             response.data?.let {
                 orderWithDetailTransaction =
-                    it.map { orderData ->
-                        Log.d(TAG, "getAllOrderHistories: $orderData")
-                        orderData.toOrderWithDetailTransaction()
-                    }
+                    it.map { orderData -> orderData.toOrderWithDetailTransaction() }
             }
             if (response.data == null) throw Exception(response.message)
         } catch (e: Exception) {
@@ -297,16 +295,29 @@ class MainRepository(
         }
     }
 
-    suspend fun cancelOrderStatus(order: Order, statusOrderItem: StatusOrderItem = StatusOrderItem.CANCELED) {
+    suspend fun pickupOrder(order: Order) {
+        try {
+            val token = datastore.getAuthToken().first()
+            val user = getUser().first()
+            val response = orderApiService.pickupOrder(
+                token, UpdateOrder(id = order.id, status = StatusOrderItem.TAKEN, mitra_id = user.id)
+            )
+            if (response.data == null) throw Exception(response.message)
+            roomDatabase.orderDao().updateOrder(order.copy(status = StatusOrderItem.TAKEN))
+        } catch (e: Exception) {
+            throw e
+        }
+    }
+
+    suspend fun cancelOrderStatus(
+        order: Order,
+        statusOrderItem: StatusOrderItem = StatusOrderItem.CANCELED
+    ) {
         try {
             val token = datastore.getAuthToken().first()
             val user = getUser().first()
             val response = orderApiService.cancelOrder(
-                token, UpdateOrder(
-                    id = order.id,
-                    status = statusOrderItem,
-                    mitraId = user.id
-                )
+                token, UpdateOrder(id = order.id, status = statusOrderItem, mitra_id = user.id)
             )
             if (response.data == null) throw Exception(response.message)
 
@@ -321,11 +332,7 @@ class MainRepository(
             val token = datastore.getAuthToken().first()
             val user = getUser().first()
             val response = orderApiService.updateOrderStatus(
-                token, UpdateOrder(
-                    id = order.id,
-                    status = statusOrderItem,
-                    mitraId = user.id
-                )
+                token, UpdateOrder(id = order.id, status = statusOrderItem, mitra_id = user.id)
             )
             if (response.data == null) throw Exception(response.message)
             roomDatabase.orderDao().updateOrder(order.copy(status = statusOrderItem))
@@ -358,30 +365,30 @@ class MainRepository(
 
     //Chat
     // TODO: change the functionality so it can create chatroom based userid and mitraid
-    suspend fun createChatroom(body: Chatroom? = null, userId: String): Flow<AddChatroomResponse>{
+    suspend fun createChatroom(userId: String): Flow<AddChatroomResponse> {
         try {
             val tokenAuth = datastore.getAuthToken().first()
             val mitraId = roomDatabase.userDao().getUser().id
-            val response = chatRoomApiService.addChatroom(token = tokenAuth, body = Chatroom(
-                mitra_id = mitraId,
-                user_id = userId,
-            ))
-            if(response.data == null) throw Exception(response.message)
-            FireBaseRealtimeDatabase.createNewChatroom(response.data!!.id )
+            val value = Chatroom(mitra_id = mitraId, user_id = userId)
+            val response = chatRoomApiService.addChatroom(
+                token = tokenAuth, body = value
+            )
+            if (response.data == null) throw Exception(response.message)
+            FireBaseRealtimeDatabase.createNewChatroom(response.data!!.id)
             return flowOf(response)
-        }catch (e: Exception){
+        } catch (e: Exception) {
             throw e
         }
     }
 
-    suspend fun deleteChatroom(roomKey: String, roomId: String): Flow<Boolean>{
+    suspend fun deleteChatroom(roomKey: String, roomId: String): Flow<Boolean> {
         try {
             val tokenAuth = datastore.getAuthToken().first()
             val response = chatRoomApiService.deleteChatroom(token = tokenAuth, id = roomId)
-            if(response.data == null) throw Exception(response.message)
+            if (response.data == null) throw Exception(response.message)
             FireBaseRealtimeDatabase.deleteChatroom(roomKey)
             return flowOf(true)
-        }catch (e: Exception){
+        } catch (e: Exception) {
             throw e
         }
     }
@@ -389,11 +396,11 @@ class MainRepository(
     suspend fun getChatRooms(): Flow<List<ChatRoomItem>> {
         try {
             val tokenAuth = datastore.getAuthToken().first()
-            val userId = roomDatabase.userDao().getUser().id
-            val response = chatRoomApiService.getChatrooms(token = tokenAuth, userId = userId)
-            if(response.data == null) throw Exception(response.message)
+            val id = roomDatabase.userDao().getUser().id
+            val response = chatRoomApiService.getChatrooms(token = tokenAuth, mitraId = id)
+            if (response.data == null) throw Exception(response.message)
             return flowOf(response.data)
-        }catch (e: Exception){
+        } catch (e: Exception) {
             throw e
         }
     }
