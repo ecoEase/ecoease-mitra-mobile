@@ -66,6 +66,7 @@ fun OrderDetailData.toOrderWithDetailTransaction(): OrderWithDetailTransaction {
         password = this.mitra.password,
         urlPhotoProfile = this.mitra.urlPhotoProfile,
         fcmToken = this.mitra.fcmToken,
+        phoneNumber = this.mitra.phoneNumber ?: "-",
     ) else null
 
     return OrderWithDetailTransaction(

@@ -1,12 +1,13 @@
 package com.bangkit.ecoeasemitra.data.remote.responseModel
 
+import com.bangkit.ecoeasemitra.data.room.model.Mitra
 import com.bangkit.ecoeasemitra.data.room.model.User
 import com.google.gson.annotations.SerializedName
 
-data class UserLoginResponse(
+data class MitraLoginResponse(
 
 	@field:SerializedName("data")
-	val data: UserData?,
+	val data: MitraData?,
 
 	@field:SerializedName("message")
 	val message: String,
@@ -15,12 +16,12 @@ data class UserLoginResponse(
 	val token: String
 )
 
-data class UserData(
+data class MitraData(
 
-	@field:SerializedName("first_name")
+	@field:SerializedName("firstName")
 	val firstName: String,
 
-	@field:SerializedName("last_name")
+	@field:SerializedName("lastName")
 	val lastName: String,
 
 	@field:SerializedName("createdAt")
@@ -33,7 +34,7 @@ data class UserData(
 	val urlPhotoProfile: String,
 
 	@field:SerializedName("phone_number")
-	val phoneNumber: String?,
+	val phoneNumber: String,
 
 	@field:SerializedName("id")
 	val id: String,
@@ -48,12 +49,12 @@ data class UserData(
 	val updatedAt: String
 )
 
-fun UserData.toUser(): User = User(
+fun MitraData.toMitra(): Mitra = Mitra(
 	id = this.id,
 	firstName = this.firstName,
 	lastName = this.lastName,
 	email = this.email,
-	phoneNumber = this.phoneNumber ?: "",
+	phoneNumber = this.phoneNumber,
 	password = this.password,
 	urlPhotoProfile = this.urlPhotoProfile,
 	fcmToken = this.fcmToken,

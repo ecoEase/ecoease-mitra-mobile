@@ -34,7 +34,6 @@ import kotlinx.coroutines.launch
 @Composable
 fun UsersChatsScreen(
     navHostController: NavHostController,
-    onCreateNewChatroom: () -> Unit,
     onLoadChatRooms: () -> Unit,
     onDeleteRoom: (id: String, key: String) -> Unit,
     eventFlow: Flow<MyEvent>,
@@ -142,8 +141,5 @@ fun UsersChatsScreen(
             }
         }
         PullRefreshIndicator(refreshing = refreshing, state = pullRefreshState)
-        FloatingActionButton(onClick = { onCreateNewChatroom() }) {
-            Icon(imageVector = Icons.Default.Chat, contentDescription = "new chatroom")
-        }
     }
 }

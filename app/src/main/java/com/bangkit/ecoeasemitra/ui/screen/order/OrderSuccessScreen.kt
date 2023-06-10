@@ -68,14 +68,14 @@ fun OrderSuccessScreen(
                 type = RoundedButtonType.SECONDARY,
                 onClick = {
                     navHostController.navigate(Screen.Home.route) {
-                        popUpTo(Screen.OrderSuccess.route) {
+                        popUpTo(Screen.PickupOrderSuccess.route) {
                             inclusive = true
                         }
                     }
                 })
             RoundedButton(text = stringResource(R.string.check_on_map), onClick = {
                 navHostController.navigate(Screen.Map.route) {
-                    popUpTo(Screen.OrderSuccess.route) {
+                    popUpTo(Screen.PickupOrderSuccess.route) {
                         inclusive = true
                     }
                 }

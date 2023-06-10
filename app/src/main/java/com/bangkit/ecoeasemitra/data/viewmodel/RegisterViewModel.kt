@@ -134,13 +134,13 @@ class RegisterViewModel(private val repository: MainRepository) : ViewModel() {
                     )
                     val registerData = Register(
                         photoFile = filePart,
-                        firstName = firstnameValidation.inputValue.value.toRequestBody("text/plain".toMediaType()),
-                        lastName = lastnameValidation.inputValue.value.toRequestBody("text/plain".toMediaType()),
+                        first_name = firstnameValidation.inputValue.value.toRequestBody("text/plain".toMediaType()),
+                        last_name = lastnameValidation.inputValue.value.toRequestBody("text/plain".toMediaType()),
                         email = emailValidation.inputValue.value.toRequestBody("text/plain".toMediaType()),
                         phone_number = phoneNumberValidation.inputValue.value.toRequestBody("text/plain".toMediaType()),
                         password = passwordValidation.inputValue.value.toRequestBody("text/plain".toMediaType()),
                     )
-                    repository.registerUser(registerData).catch { error ->
+                    repository.register(registerData).catch { error ->
                         eventChannel.send(MyEvent.MessageEvent("error: ${error.message}"))
                     }.collect{result ->
                         resetAllInput()

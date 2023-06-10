@@ -18,7 +18,7 @@ sealed class Screen(val route: String, val icon: ImageVector){
         fun createRoute(orderId: String) = "detail_order/$orderId"
     }
     object ChangeAddress : Screen(route = "change_address", icon = Icons.Default.Reorder)
-    object OrderSuccess : Screen(route = "order_success", icon = Icons.Default.Reorder)
+    object PickupOrderSuccess : Screen(route = "order_success", icon = Icons.Default.Reorder)
     object UsersChats : Screen(route = "users_chats", icon = Icons.Default.Chat)
     object ChatRoom : Screen(route = "chat_room/{roomId}", icon = Icons.Default.Chat){
         private var title: String? = null

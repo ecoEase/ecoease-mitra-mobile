@@ -61,7 +61,7 @@ class AuthViewModel(private val repository: MainRepository) : ViewModel() {
             _isLoginValid.value = UiState.Loading
             viewModelScope.launch(Dispatchers.IO) {
                 try {
-                    repository.loginUser(
+                    repository.loginMitra(
                         Login(
                             email = emailValidation.inputValue.value,
                             password = passwordValidation.inputValue.value
@@ -97,7 +97,11 @@ class AuthViewModel(private val repository: MainRepository) : ViewModel() {
     private fun setFCMToken(id: String) {
         FirebaseMessaging.getInstance().token.addOnCompleteListener {
             viewModelScope.launch(Dispatchers.IO) {
-                repository.setFCMToken(id = id, token = it.result)
+                try {
+                    repository.setFCMToken(id = id, token = it.result)
+                }catch (e: Exception){
+                    eventChannel.send(MyEvent.MessageEvent("error: ${e.message}"))
+                }
             }
         }
     }
@@ -105,7 +109,11 @@ class AuthViewModel(private val repository: MainRepository) : ViewModel() {
     private fun resetFCMToken() {
         FirebaseMessaging.getInstance().deleteToken().addOnCompleteListener {
             viewModelScope.launch(Dispatchers.IO) {
-                repository.setFCMToken(token = "")
+                try {
+                    repository.setFCMToken(token = "")
+                }catch (e: Exception){
+                    eventChannel.send(MyEvent.MessageEvent("error: ${e.message}"))
+                }
             }
         }
     }

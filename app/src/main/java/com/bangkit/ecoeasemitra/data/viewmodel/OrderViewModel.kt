@@ -182,7 +182,7 @@ class OrderViewModel(private val repository: MainRepository) : ViewModel() {
     ) {
         viewModelScope.launch(Dispatchers.IO) {
             try {
-                repository.updateOrderStatus(order = order, statusOrderItem = statusOrderItem)
+                repository.cancelOrderStatus(order = order, statusOrderItem = statusOrderItem)
                 eventChannel.send(MyEvent.MessageEvent("success update order"))
                 withContext(Dispatchers.Main){
                     onSuccess()

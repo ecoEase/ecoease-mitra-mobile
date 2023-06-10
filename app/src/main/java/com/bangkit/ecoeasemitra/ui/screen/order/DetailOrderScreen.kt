@@ -31,7 +31,9 @@ fun DetailOrderScreen(
     orderDetailStateFlow: StateFlow<UiState<OrderWithDetailTransaction>>,
     onReloadDetailOrder: () -> Unit,
     onUpdateOrderStatus: (Order, StatusOrderItem) -> Unit,
+    onCreateNewChatroom: (String) -> Unit,
     eventFlow: Flow<MyEvent>,
+    createChatroomEventFlow: Flow<MyEvent>,
     modifier: Modifier = Modifier,
 ) {
     val context = LocalContext.current
@@ -145,21 +147,26 @@ fun OrderDetailContent(
                 )
             }
         }
-        if (order.status == StatusOrderItem.NOT_TAKEN && order.userId == myId) {
-            RoundedButton(
-                text = "batalkan pesanan",
-                type = RoundedButtonType.SECONDARY,
-                enabled = true,
-                onClick = {
-                    openDialog = true
-                },
-                modifier = Modifier.fillMaxWidth()
-            )
-            DialogBox(
-                text = "Apakah anda yakin untuk membatalkan pesanan anda?",
-                onDissmiss = { openDialog = false },
-                isOpen = openDialog,
-                onAccept = { onUpdateOrderStatus(order, StatusOrderItem.CANCELED) })
+        // TODO: add processing order, pickup, onprogress, finished, cancel order status 
+        when{
+            order.status == StatusOrderItem.NOT_TAKEN -> {
+                RoundedButton(
+                    text = "ambil pesanan",
+                    type = RoundedButtonType.SECONDARY,
+                    enabled = true,
+                    onClick = {
+                        openDialog = true
+                    },
+                    modifier = Modifier.fillMaxWidth()
+                )
+            }
+            else -> {}
         }
+        
+        DialogBox(
+            text = "Apakah anda yakin untuk membatalkan pesanan anda?",
+            onDissmiss = { openDialog = false },
+            isOpen = openDialog,
+            onAccept = { onUpdateOrderStatus(order, StatusOrderItem.CANCELED) })
     }
 }

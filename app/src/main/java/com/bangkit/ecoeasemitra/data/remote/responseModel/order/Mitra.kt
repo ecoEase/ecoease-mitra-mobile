@@ -25,6 +25,9 @@ data class Mitra(
     @field:SerializedName("email")
     val email: String,
 
+    @field:SerializedName("phone_number")
+    val phoneNumber: String,
+
     @field:SerializedName("updatedAt")
     val updatedAt: String,
 

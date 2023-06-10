@@ -10,8 +10,6 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.*
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.CameraEnhance
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
@@ -22,7 +20,6 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
-import com.bangkit.ecoeasemitra.CameraActivity.Companion.CAMERA_X_RESULT
 import com.bangkit.ecoeasemitra.config.ViewModelFactory
 import com.bangkit.ecoeasemitra.data.Screen
 import com.bangkit.ecoeasemitra.data.model.ImageCaptured
@@ -37,12 +34,9 @@ import com.bangkit.ecoeasemitra.ui.screen.dashboard.DashboardScreen
 import com.bangkit.ecoeasemitra.ui.screen.onboard.OnBoardingScreen
 import com.bangkit.ecoeasemitra.ui.screen.order.DetailOrderScreen
 import com.bangkit.ecoeasemitra.ui.screen.order.OrderHistoryScreen
-import com.bangkit.ecoeasemitra.ui.screen.order.OrderScreen
 import com.bangkit.ecoeasemitra.ui.screen.order.OrderSuccessScreen
 import com.bangkit.ecoeasemitra.ui.screen.register.RegisterScreen
 import com.bangkit.ecoeasemitra.ui.theme.EcoEaseTheme
-import java.util.concurrent.ExecutorService
-import java.util.concurrent.Executors
 
 val listMainRoute = listOf(
     Screen.Home,
@@ -54,11 +48,9 @@ val listNoTopBar = listOf(
     Screen.Onboard,
     Screen.Auth,
     Screen.Register,
-    Screen.OrderSuccess
+    Screen.PickupOrderSuccess
 )
 class MainActivity : ComponentActivity() {
-    private val cameraExecutor: ExecutorService = Executors.newSingleThreadExecutor()
-    private lateinit var cameraViewModel: CameraViewModel
     private lateinit var registerViewModel: RegisterViewModel
 
 
@@ -66,14 +58,11 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         val splashViewModel = ViewModelFactory(Injection.provideInjection(this)).create(SplashViewModel::class.java)
         super.onCreate(savedInstanceState)
-        cameraViewModel = ViewModelFactory(Injection.provideInjection(this)).create(CameraViewModel::class.java)
         registerViewModel = ViewModelFactory(Injection.provideInjection(this)).create(RegisterViewModel::class.java)
         val authViewModel = ViewModelFactory(Injection.provideInjection(this)).create(AuthViewModel::class.java)
         val orderViewModel = ViewModelFactory(Injection.provideInjection(this)).create(OrderViewModel::class.java)
         val garbageViewModel = ViewModelFactory(Injection.provideInjection(this)).create(GarbageViewModel::class.java)
-        val addressViewModel = ViewModelFactory(Injection.provideInjection(this)).create(AddressViewModel::class.java)
         val userViewModel = ViewModelFactory(Injection.provideInjection(this)).create(UserViewModel::class.java)
-        val locationViewModel = ViewModelFactory(Injection.provideInjection(this)).create(LocationViewModel::class.java)
         val messageViewModel = ViewModelFactory(Injection.provideInjection(this)).create(MessageViewModel::class.java)
 
         installSplashScreen().setKeepOnScreenCondition{
@@ -123,16 +112,12 @@ class MainActivity : ComponentActivity() {
                                 )
                             }
                         },
-                        floatingActionButton = {
-                            if(isMainRoute) FloatingButton(description = "scan", icon = Icons.Default.CameraEnhance, onClick = { navController.navigate(Screen.Scan.route) })
-                        },
                         bottomBar = {
                             if(isMainRoute) BottomNavBar(navController = navController, items = listMainRoute)
                         },
                         floatingActionButtonPosition = FabPosition.Center,
                         isFloatingActionButtonDocked = true,
                     ) {paddingValues ->
-                        // TODO: TESTING FOR EACH SCREEN
                         DialogBox(text = "Apakah anda yakin ingin membatalkan order anda", onDissmiss = { openDialog = false }, onAccept = { resetOrder() }, isOpen = openDialog)
                         NavHost(
                             navController = navController,
@@ -152,34 +137,7 @@ class MainActivity : ComponentActivity() {
                                     onReloadGarbage = { garbageViewModel.reloadGarbage() },
                                 )
                             }
-                            composable(
-                                route = Screen.Scan.route,
-                                arguments = listOf(navArgument("path"){
-                                    nullable = true
-                                    defaultValue = null
-                                    type = NavType.StringType
-                                })
-                            ){
-                                val filePath = it.arguments?.getString("path") ?: ""
-                                ScanScreen(
-                                    navController = navController,
-                                    filePath = filePath,
-                                    imageCapturedState = cameraViewModel.uiStateImageCaptured,
-                                    onLoadingImageState = { cameraViewModel.getImageUri() },
-                                    openCamera = {
-                                        val intent = Intent(this@MainActivity, CameraActivity::class.java)
-                                        launcherIntentCameraX.launch(intent)
-                                    },
-                                    openGallery = {
-                                        val intent = Intent().apply {
-                                            action = ACTION_GET_CONTENT
-                                            type = "image/*"
-                                        }
-                                        val chooser = Intent.createChooser(intent, "Choose a picture")
-                                        launcherIntentGallery.launch(chooser)
-                                    }
-                                )
-                            }
+
                             composable(Screen.History.route){
                                 OrderHistoryScreen(
                                     orderHistoryState = orderViewModel.orderHistoryState,
@@ -254,55 +212,7 @@ class MainActivity : ComponentActivity() {
                                     }
                                 )
                             }
-                            composable(Screen.Order.route){
-                                OrderScreen(
-                                    navHostController = navController,
-                                    orderStateFlow = orderViewModel.orderState,
-                                    selectedAddressStateFlow = addressViewModel.selectedAddress,
-                                    lastLocationStateFlow = locationViewModel.lastLocationStateFlow,
-                                    listGarbageFlow = garbageViewModel.garbageState,
-                                    loadListGarbage = { garbageViewModel.getAllGarbage() },
-                                    loadLastLocation = { locationViewModel.getLastLocation() },
-                                    reloadListGarbage = { garbageViewModel.reloadGarbage() },
-                                    onLoadSelectedAddress = { addressViewModel.loadSelectedAddress() },
-                                    onReloadSelectedAddress = { addressViewModel.reloadSelectedAddress() },
-                                    addGarbageOrderSlot = { orderViewModel.addGarbageSlot()},
-                                    deleteGarbageSlotAt = { orderViewModel.deleteGarbageAt(it)},
-                                    updateGarbageAtIndex = { index, newGarbage -> orderViewModel.updateGarbage(index, newGarbage) },
-                                    eventFlow = orderViewModel.eventFlow,
-                                    onMakeOrder = { listGarbage, totalTransaction, location -> orderViewModel.makeOrder(listGarbage, totalTransaction, location, onSuccess = {
-                                        navController.navigate(Screen.OrderSuccess.route){
-                                            popUpTo(Screen.Order.route) {
-                                                inclusive = true
-                                            }
-
-                                        }
-                                    }) },
-                                    onAcceptResetOrder = {resetOrder()}
-                                ) }
-                            composable(Screen.ChangeAddress.route){
-                                ChangeAddressScreen(
-                                    navHostController = navController,
-                                    nameValidation = addressViewModel.addressNameValidation,
-                                    cityValidation = addressViewModel.cityValidation,
-                                    districtValidation = addressViewModel.districtValidation,
-                                    detailValidation = addressViewModel.detailValidation,
-                                    validateName = {addressViewModel.validateNameInput()},
-                                    validateDetail = {addressViewModel.validateDetailInput()},
-                                    validateCity = {addressViewModel.validateCityInput()},
-                                    validateDistrict = {addressViewModel.validateDistrictInput()},
-                                    onLoadSavedAddress = { addressViewModel.loadSavedAddress() },
-                                    onAddNewAddress = { address -> addressViewModel.addNewAddress(address) },
-                                    onDeleteAddress = { address -> addressViewModel.deleteAddress(address) },
-                                    onSelectedAddress = { address -> addressViewModel.pickSelectedAddress(address) },
-                                    onSaveSelectedAddress = { address, onSuccess -> addressViewModel.confirmSelectedAddress(address, onSuccess) },
-                                    onReloadSavedAddress = { addressViewModel.reloadSavedAddress() },
-                                    savedAddressStateFlow = addressViewModel.savedAddress,
-                                    eventFlow = addressViewModel.eventFlow,
-                                    tempSelectedAddressStateFlow = addressViewModel.tempSelectedAddress,
-                                )
-                            }
-                            composable(Screen.OrderSuccess.route){
+                            composable(Screen.PickupOrderSuccess.route){
                                 OrderSuccessScreen(navHostController = navController)
                             }
                             composable(
@@ -323,7 +233,9 @@ class MainActivity : ComponentActivity() {
                                             }
                                         }
                                     }) },
-                                    eventFlow = orderViewModel.eventFlow
+                                    eventFlow = orderViewModel.eventFlow,
+                                    createChatroomEventFlow = messageViewModel.eventFlow,
+                                    onCreateNewChatroom = { userId -> messageViewModel.createChatroom(userId) },
                                 )
                             }
                             composable(Screen.UsersChats.route){
@@ -332,9 +244,8 @@ class MainActivity : ComponentActivity() {
                                     onLoadChatRooms = {},
                                     eventFlow = messageViewModel.eventFlow,
                                     onDeleteRoom = { roomKey, roomId -> messageViewModel.deleteChatroom(roomKey, roomId, onSuccess = {
-
+                                    // TODO: add onsuccess
                                     }) },
-                                    onCreateNewChatroom = { messageViewModel.createChatroom() }
                                 )
                             }
                             composable(
@@ -357,38 +268,6 @@ class MainActivity : ComponentActivity() {
             }
         }
     }
-
-    private val launcherIntentCameraX = registerForActivityResult(
-        ActivityResultContracts.StartActivityForResult()
-    ) {result ->
-        if (result.resultCode == CAMERA_X_RESULT) {
-            val imageUri = result.data?.getStringExtra("picture")
-            val isBackCam = result.data?.getBooleanExtra("cam-facing", true)
-            imageUri?.let {stringUri ->
-                isBackCam?.let { isBackCam ->
-                    cameraViewModel.setImage(
-                        ImageCaptured(
-                            uri = Uri.parse(stringUri),
-                            isBackCam = isBackCam
-                        )
-                    )
-                }
-            }
-        }
-    }
-
-    private val launcherIntentGallery = registerForActivityResult(
-        ActivityResultContracts.StartActivityForResult()
-    ){ result ->
-        if(result.resultCode == RESULT_OK){
-            val selectedImage = result.data?.data as Uri
-            selectedImage?.let { uri ->
-                cameraViewModel.setImage(
-                    ImageCaptured(uri = uri, isBackCam = true)
-                )
-            }
-        }
-    }
     private val launcherIntentGalleryRegister = registerForActivityResult(
         ActivityResultContracts.StartActivityForResult()
     ){ result ->
@@ -400,10 +279,5 @@ class MainActivity : ComponentActivity() {
                 )
             }
         }
-    }
-
-    override fun onDestroy() {
-        super.onDestroy()
-        cameraExecutor.shutdown()
     }
 }

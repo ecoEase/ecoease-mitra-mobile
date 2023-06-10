@@ -112,7 +112,7 @@ fun Banner(
                         }
                     }
                     RoundedButton(
-                        text = stringResource(id = R.string.make_report_btn),
+                        text = stringResource(R.string.take_order),
                         type = RoundedButtonType.SECONDARY,
                         onClick = bannerAction
                     )

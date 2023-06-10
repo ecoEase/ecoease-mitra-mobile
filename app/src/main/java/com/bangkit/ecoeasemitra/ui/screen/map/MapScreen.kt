@@ -63,7 +63,7 @@ fun MapScreen(
     var city by rememberSaveable { mutableStateOf("") }
     var garbageNames by remember { mutableStateOf("") }
 
-    fun handlerRequestPermissionAndCurrentLocation(){
+    fun handlerRequestPermissionAndCurrentLocation() {
         permissionsState.launchMultiplePermissionRequest()
         fusedLocationClient.getLastLocation(context,
             onSuccess = {
@@ -87,10 +87,16 @@ fun MapScreen(
     PermissionsRequired(
         multiplePermissionsState = permissionsState,
         permissionsNotGrantedContent = {
-            Column(horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier.padding(32.dp)) {
-                Text(text = "To run this feature, this app require those permission.", style = MaterialTheme.typography.caption.copy(
-                    color = DarkGrey
-                ))
+            Column(
+                horizontalAlignment = Alignment.CenterHorizontally,
+                modifier = Modifier.padding(32.dp)
+            ) {
+                Text(
+                    text = "To run this feature, this app require those permission.",
+                    style = MaterialTheme.typography.caption.copy(
+                        color = DarkGrey
+                    )
+                )
                 RoundedButton(
                     text = "re-request permission",
                     trailIcon = Icons.Default.Replay,
@@ -226,14 +232,24 @@ private fun DetailOrder(
             )
 
         }
-        Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
-            Text(text = "Detail Order", style = MaterialTheme.typography.body2.copy(
-                color = DarkGrey
-            ))
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Text(
+                text = "Detail Order", style = MaterialTheme.typography.body2.copy(
+                    color = DarkGrey
+                )
+            )
             IconButton(
                 onClick = { collapseBottomSheet() }
             ) {
-                Icon(imageVector = Icons.Default.Close, contentDescription = "close icon", tint = DarkGrey)
+                Icon(
+                    imageVector = Icons.Default.Close,
+                    contentDescription = "close icon",
+                    tint = DarkGrey
+                )
             }
         }
         Spacer(modifier = Modifier.height(18.dp))
@@ -251,21 +267,19 @@ private fun DetailOrder(
                 )
             )
         }
-        Row {
-            Column(modifier = Modifier.weight(1f)) {
-                Text(
-                    text = userName,
-                    style = MaterialTheme.typography.body1.copy(color = DarkGrey)
-                )
-                Spacer(modifier = Modifier.height(8.dp))
-                Text(text = detailAddress, style = MaterialTheme.typography.subtitle2)
-                Text(text = "$district, $city.", style = MaterialTheme.typography.caption)
-            }
-            RoundedButton(
-                text = stringResource(id = R.string.detail),
-                modifier = Modifier.align(Alignment.Bottom),
-                onClick = { openDetailOrder(id) })
+        Column{
+            Text(
+                text = userName,
+                style = MaterialTheme.typography.body1.copy(color = DarkGrey)
+            )
+            Spacer(modifier = Modifier.height(8.dp))
+            Text(text = detailAddress, style = MaterialTheme.typography.subtitle2)
+            Text(text = "$district, $city.", style = MaterialTheme.typography.caption)
         }
+        RoundedButton(
+            text = stringResource(id = R.string.detail),
+            modifier = Modifier.fillMaxWidth(),
+            onClick = { openDetailOrder(id) })
     }
 }
 

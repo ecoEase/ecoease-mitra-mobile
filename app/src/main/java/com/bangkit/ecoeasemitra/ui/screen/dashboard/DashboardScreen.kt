@@ -114,7 +114,7 @@ fun Header(
     Column(modifier) {
         Text(text = stringResource(R.string.good_morning), style = MaterialTheme.typography.h4)
         Spacer(modifier = Modifier.height(42.dp))
-        Banner(bannerAction = { navHostController.navigate(Screen.Order.route) })
+        Banner(bannerAction = { navHostController.navigate(Screen.Map.route) })
         Spacer(modifier = Modifier.height(42.dp))
     }
 }
@@ -132,7 +132,7 @@ fun DashboardScreenContent(
         garbageStateFlow.collectAsState(initial = UiState.Loading).value.let { uiState ->
             when (uiState) {
                 is UiState.Loading -> {
-                    CircularProgressIndicator(modifier = modifier)
+                    CircularProgressIndicator()
                     onLoadGarbage()
                 }
                 is UiState.Success -> {

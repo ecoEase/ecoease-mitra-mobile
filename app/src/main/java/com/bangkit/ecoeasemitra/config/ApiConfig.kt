@@ -26,7 +26,7 @@ class ApiConfig{
         }.build()
 
         fun getGarbageApiService(): GarbageApiService = retrofit.create(GarbageApiService::class.java)
-        fun getUserApiService(): UserApiService = retrofit.create(UserApiService::class.java)
+        fun getMitraApiService(): MitraApiService = retrofit.create(MitraApiService::class.java)
         fun getAddressApiService(): AddressApiService = retrofit.create(AddressApiService::class.java)
         fun getOrderApiService(): OrderApiService = retrofit.create(OrderApiService::class.java)
         fun getChatroomApiService(): ChatroomApiService = retrofit.create(ChatroomApiService::class.java)

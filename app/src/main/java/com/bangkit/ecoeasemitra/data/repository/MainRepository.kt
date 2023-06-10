@@ -21,6 +21,7 @@ import com.bangkit.ecoeasemitra.data.room.model.Address
 import com.bangkit.ecoeasemitra.data.room.model.Order
 import com.bangkit.ecoeasemitra.helper.toOrderWithDetailTransaction
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flowOf
 
@@ -31,9 +32,8 @@ class MainRepository(
 ) {
     private var capturedImageUri: ImageCaptured? = null
 
-    // TODO: add API service for each endpoint
     private val garbageApiService = ApiConfig.getGarbageApiService()
-    private val userApiService = ApiConfig.getUserApiService()
+    private val mitraApiService = ApiConfig.getMitraApiService()
     private val addressApiService = ApiConfig.getAddressApiService()
     private val orderApiService = ApiConfig.getOrderApiService()
     private val chatRoomApiService = ApiConfig.getChatroomApiService()
@@ -64,12 +64,12 @@ class MainRepository(
     }
 
     //USER
-    suspend fun registerUser(registerData: Register): Flow<Boolean> {
+    suspend fun register(registerData: Register): Flow<Boolean> {
         try {
-            val response = userApiService.register(
+            val response = mitraApiService.register(
                 photoFile = registerData.photoFile,
-                firstName = registerData.firstName,
-                lastName = registerData.lastName,
+                firstName = registerData.first_name,
+                lastName = registerData.last_name,
                 email = registerData.email,
                 phone_number = registerData.phone_number,
                 password = registerData.password,
@@ -87,10 +87,10 @@ class MainRepository(
         }
     }
 
-    suspend fun loginUser(loginData: Login): Flow<UserData> {
+    suspend fun loginMitra(loginData: Login): Flow<UserData> {
         try {
-            val response = userApiService.login(loginData)
-            response.data?.let {
+            val response = mitraApiService.login(loginData)
+            response.data?.let {11
                 val userData = it
                 roomDatabase.userDao().deleteAll()
                 roomDatabase.userDao().addUser(userData.toUser())
@@ -231,12 +231,12 @@ class MainRepository(
     }
 
     //ORDER HISTORY
-    suspend fun getAllOrderHistories(userId: String): Flow<List<OrderWithDetailTransaction>> {
+    suspend fun getAllOrderHistories(mitraId: String): Flow<List<OrderWithDetailTransaction>> {
         var orderWithDetailTransaction: List<OrderWithDetailTransaction> = listOf()
 
         try {
             val token = datastore.getAuthToken().first()
-            val response = orderApiService.getByUser(token, userId)
+            val response = orderApiService.getByMitra(token, mitraId)
 
             response.data?.let {
                 orderWithDetailTransaction =
@@ -297,18 +297,37 @@ class MainRepository(
         }
     }
 
-    suspend fun updateOrderStatus(order: Order, statusOrderItem: StatusOrderItem) {
+    suspend fun cancelOrderStatus(order: Order, statusOrderItem: StatusOrderItem = StatusOrderItem.CANCELED) {
         try {
             val token = datastore.getAuthToken().first()
+            val user = getUser().first()
             val response = orderApiService.cancelOrder(
                 token, UpdateOrder(
                     id = order.id,
-                    status = statusOrderItem
+                    status = statusOrderItem,
+                    mitraId = user.id
                 )
             )
-
             if (response.data == null) throw Exception(response.message)
 
+            roomDatabase.orderDao().updateOrder(order.copy(status = statusOrderItem))
+        } catch (e: Exception) {
+            throw e
+        }
+    }
+
+    suspend fun updateOrderStatus(order: Order, statusOrderItem: StatusOrderItem) {
+        try {
+            val token = datastore.getAuthToken().first()
+            val user = getUser().first()
+            val response = orderApiService.updateOrderStatus(
+                token, UpdateOrder(
+                    id = order.id,
+                    status = statusOrderItem,
+                    mitraId = user.id
+                )
+            )
+            if (response.data == null) throw Exception(response.message)
             roomDatabase.orderDao().updateOrder(order.copy(status = statusOrderItem))
         } catch (e: Exception) {
             throw e
@@ -339,13 +358,13 @@ class MainRepository(
 
     //Chat
     // TODO: change the functionality so it can create chatroom based userid and mitraid
-    suspend fun createChatroom(body: Chatroom? = null): Flow<AddChatroomResponse>{
+    suspend fun createChatroom(body: Chatroom? = null, userId: String): Flow<AddChatroomResponse>{
         try {
             val tokenAuth = datastore.getAuthToken().first()
-            val userId = roomDatabase.userDao().getUser().id
+            val mitraId = roomDatabase.userDao().getUser().id
             val response = chatRoomApiService.addChatroom(token = tokenAuth, body = Chatroom(
+                mitra_id = mitraId,
                 user_id = userId,
-                mitra_id = "815d6dbe-03d5-4642-b9bb-5e9defc7ff24"
             ))
             if(response.data == null) throw Exception(response.message)
             FireBaseRealtimeDatabase.createNewChatroom(response.data!!.id )
@@ -384,7 +403,7 @@ class MainRepository(
         try {
             val tokenAuth = datastore.getAuthToken().first()
             id?.let {
-                fcmServerApiService.updateUserToken(
+                fcmServerApiService.updateMitraToken(
                     token = tokenAuth,
                     id = it,
                     body = UpdateFCMToken(token)
@@ -396,7 +415,6 @@ class MainRepository(
         }
     }
 
-    suspend fun getFCMToken(): String = datastore.getFCMToken().first()
     suspend fun sendNotification(body: FCMNotification) {
         try {
             val token = BuildConfig.FCM_key

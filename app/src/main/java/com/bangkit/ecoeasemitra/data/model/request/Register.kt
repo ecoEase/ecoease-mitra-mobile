@@ -5,8 +5,8 @@ import okhttp3.RequestBody
 
 data class Register(
     val photoFile: MultipartBody.Part,
-    val firstName: RequestBody,
-    val lastName: RequestBody,
+    val first_name: RequestBody,
+    val last_name: RequestBody,
     val email: RequestBody,
     val password: RequestBody,
     val phone_number: RequestBody,

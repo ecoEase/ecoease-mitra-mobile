@@ -1,7 +1,7 @@
 <resources>
     <string name="app_name">EcoEase Mitra</string>
-    <string name="banner_text_1">Punya sampah daur ulang?</string>
-    <string name="banner_text_2">Laporkan, tukar sampah jadi uang</string>
+    <string name="banner_text_1">Sudah ambil pesanan hari ini?</string>
+    <string name="banner_text_2">Ayo mulai ambil order</string>
     <string name="make_report_btn">buat laporan</string>
     <string name="average_price">Rerata harga</string>
     <string name="order_not_taken">belum diambil</string>
@@ -46,4 +46,5 @@
     <string name="pick_by">diambil oleh</string>
     <string name="finished">selesai</string>
     <string name="register">registrasi</string>
+    <string name="take_order">ambil order</string>
 </resources>

@@ -53,10 +53,10 @@ class MessageViewModel(private val repository: MainRepository) : ViewModel() {
         }
     }
 
-    fun createChatroom() {
+    fun createChatroom(targetUserId: String) {
         viewModelScope.launch(Dispatchers.IO) {
             try {
-                repository.createChatroom().catch {
+                repository.createChatroom(userId = targetUserId).catch {
                     eventChannel.send(MyEvent.MessageEvent("error: ${it.message}"))
                 }.collect {
                     eventChannel.send(MyEvent.MessageEvent("success creating room ${it.data?.id}"))
