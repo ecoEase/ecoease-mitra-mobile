@@ -21,8 +21,7 @@ class MessageViewModel(private val repository: MainRepository) : ViewModel() {
     private val eventChannel = Channel<MyEvent>()
     val eventFlow = eventChannel.receiveAsFlow()
     private var _user: MutableStateFlow<UiState<User>> = MutableStateFlow(UiState.Loading)
-    private var _chatrooms: MutableStateFlow<UiState<List<ChatRoomItem>>> =
-        MutableStateFlow(UiState.Loading)
+    private var _chatrooms: MutableStateFlow<UiState<List<ChatRoomItem>>> = MutableStateFlow(UiState.Loading)
     val user: StateFlow<UiState<User>> = _user
     val chatrooms: StateFlow<UiState<List<ChatRoomItem>>> = _chatrooms
 

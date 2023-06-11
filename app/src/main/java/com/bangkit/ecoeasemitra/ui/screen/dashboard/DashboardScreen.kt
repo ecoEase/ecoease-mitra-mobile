@@ -80,7 +80,6 @@ fun DashboardScreenPotraitContent(
     }
 }
 
-
 @Composable
 fun DashboardScreenLandscapeContent(
     garbageStateFlow: StateFlow<UiState<List<Garbage>>>,
@@ -126,13 +125,13 @@ fun DashboardScreenContent(
     onReloadGarbage: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    Column(modifier = modifier) {
+    Column(modifier = modifier.fillMaxWidth()) {
         Text(text = stringResource(R.string.garbage_price), style = MaterialTheme.typography.h5)
         Spacer(modifier = Modifier.height(16.dp))
         garbageStateFlow.collectAsState(initial = UiState.Loading).value.let { uiState ->
             when (uiState) {
                 is UiState.Loading -> {
-                    CircularProgressIndicator()
+                    CircularProgressIndicator(modifier = Modifier.align(Alignment.CenterHorizontally))
                     onLoadGarbage()
                 }
                 is UiState.Success -> {

@@ -3,7 +3,6 @@ package com.bangkit.ecoeasemitra.data.remote.responseModel.chatroom
 import com.google.gson.annotations.SerializedName
 
 data class ChatroomResponse(
-
 	@field:SerializedName("data")
 	val data: List<ChatRoomItem>?,
 
@@ -37,16 +36,18 @@ data class User(
 	@field:SerializedName("email")
 	val email: String,
 
+	@field:SerializedName("fcm_token")
+	val fcmToken: String,
+
 	@field:SerializedName("updatedAt")
 	val updatedAt: String
 )
-
 data class ChatRoomItem(
 
 	@field:SerializedName("createdAt")
 	val createdAt: String,
 
-	@field:SerializedName("User")
+	@field:SerializedName("user")
 	val user: User,
 
 	@field:SerializedName("user_id")
@@ -64,7 +65,6 @@ data class ChatRoomItem(
 	@field:SerializedName("updatedAt")
 	val updatedAt: String
 )
-
 data class Mitra(
 
 	@field:SerializedName("createdAt")
@@ -87,6 +87,9 @@ data class Mitra(
 
 	@field:SerializedName("email")
 	val email: String,
+
+	@field:SerializedName("fcm_token")
+	val fcmToken: String,
 
 	@field:SerializedName("updatedAt")
 	val updatedAt: String

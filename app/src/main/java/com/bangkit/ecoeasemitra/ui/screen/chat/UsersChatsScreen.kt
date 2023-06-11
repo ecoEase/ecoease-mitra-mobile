@@ -1,5 +1,6 @@
 package com.bangkit.ecoeasemitra.ui.screen.chat
 
+import android.util.Log
 import android.widget.Toast
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.clickable
@@ -28,11 +29,14 @@ import com.bangkit.ecoeasemitra.data.remote.responseModel.chatroom.ChatRoomItem
 import com.bangkit.ecoeasemitra.helper.generateUUID
 import com.bangkit.ecoeasemitra.ui.common.UiState
 import com.bangkit.ecoeasemitra.ui.component.Avatar
+import com.google.gson.GsonBuilder
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 
+
+private val gsonPretty = GsonBuilder().setPrettyPrinting().create()
 @OptIn(ExperimentalMaterialApi::class)
 @Composable
 fun UsersChatsScreen(
@@ -113,6 +117,7 @@ fun UsersChatsScreen(
                         onLoadChatRooms()
                     }
                     is UiState.Success -> {
+                        Log.d("TAG", "UsersChatsScreen: ${gsonPretty.toJson(uiState)}")
                         AnimatedVisibility(
                             visible = !loading, modifier = Modifier
                                 .weight(1f)
@@ -129,6 +134,11 @@ fun UsersChatsScreen(
                                                         Screen.ChatRoom.setTitle("${room.user.firstName} ${room.user.lastName}")
                                                         val roomChatRoute =
                                                             Screen.ChatRoom.createRoute(it.id ?: "")
+//                                                        Screen.ChatRoom.setTitle("LOREM IPSUM   ")
+//                                                        val roomChatRoute =
+//                                                            Screen.ChatRoom.createRoute(
+//                                                                it.key ?: ""
+//                                                            )
                                                         navHostController.navigate(roomChatRoute)
                                                     }
                                                 },
@@ -137,6 +147,8 @@ fun UsersChatsScreen(
                                         {
                                             Avatar(imageUrl = room.user.urlPhotoProfile)
                                             Text(text = "${room.user.firstName} ${room.user.lastName}")
+//                                            Avatar(imageUrl = "https://images.unsplash.com/photo-1664575600850-c4b712e6e2bf?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=387&q=80")
+//                                            Text(text = "lorem")
                                         }
 //                                        IconButton(onClick = {
 //                                            onDeleteRoom(room.key, room.value ?: "")
