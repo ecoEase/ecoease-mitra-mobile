@@ -3,10 +3,12 @@ package com.bangkit.ecoeasemitra
 import android.content.Intent
 import android.content.Intent.ACTION_GET_CONTENT
 import android.net.Uri
+import android.os.Build
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.annotation.RequiresApi
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.*
@@ -23,6 +25,8 @@ import androidx.navigation.navArgument
 import com.bangkit.ecoeasemitra.config.ViewModelFactory
 import com.bangkit.ecoeasemitra.data.Screen
 import com.bangkit.ecoeasemitra.data.model.ImageCaptured
+import com.bangkit.ecoeasemitra.data.model.request.FCMNotification
+import com.bangkit.ecoeasemitra.data.model.request.Notification
 import com.bangkit.ecoeasemitra.data.viewmodel.*
 import com.bangkit.ecoeasemitra.di.Injection
 import com.bangkit.ecoeasemitra.ui.component.*
@@ -53,6 +57,7 @@ val listNoTopBar = listOf(
 class MainActivity : ComponentActivity() {
     private lateinit var registerViewModel: RegisterViewModel
 
+    @RequiresApi(Build.VERSION_CODES.O)
     override fun onCreate(savedInstanceState: Bundle?) {
         val splashViewModel = ViewModelFactory(Injection.provideInjection(this)).create(SplashViewModel::class.java)
         super.onCreate(savedInstanceState)
@@ -232,6 +237,9 @@ class MainActivity : ComponentActivity() {
                                     eventFlow = orderViewModel.eventFlow,
                                     createChatroomEventFlow = messageViewModel.eventFlow,
                                     onCreateNewChatroom = { userId -> messageViewModel.createChatroom(userId) },
+                                    sendNotification = { userFcmToken, message -> messageViewModel.sendNotification(
+                                        FCMNotification(to = userFcmToken, notification = Notification(body = message, title = message, subTitle = message))
+                                    ) },
                                 )
                             }
                             composable(Screen.UsersChats.route){
@@ -240,9 +248,7 @@ class MainActivity : ComponentActivity() {
                                     onLoadChatRooms = {messageViewModel.getChatrooms()},
                                     chatroomsUiState = messageViewModel.chatrooms,
                                     eventFlow = messageViewModel.eventFlow,
-                                    onDeleteRoom = { roomKey, roomId -> messageViewModel.deleteChatroom(roomKey, roomId, onSuccess = {
-                                    // TODO: add onsuccess
-                                    }) },
+                                    onDeleteRoom = { roomKey, roomId -> messageViewModel.deleteChatroom(roomKey, roomId) },
                                 )
                             }
                             composable(
@@ -252,8 +258,10 @@ class MainActivity : ComponentActivity() {
                                 val roomId = it.arguments?.getString("roomId") ?: "ref"
                                 ChatRoomScreen(
                                     getCurrentUser = {messageViewModel.getCurrentUser()},
-                                    reloadGetCurrentUser = {messageViewModel.reloadCurrentUser()},
                                     userUiState = messageViewModel.user,
+                                    getChatroomDetail = {messageViewModel.getDetailChatroom(roomId)},
+                                    chatroomDetailUiState = messageViewModel.detailChatrooms,
+                                    reloadGetCurrentUser = {messageViewModel.reloadCurrentUser()},
                                     sendNotification = { body -> messageViewModel.sendNotification(body) },
                                     roomId = roomId,
                                 )

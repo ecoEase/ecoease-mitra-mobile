@@ -82,7 +82,7 @@ fun ItemHistory(
                 Box(modifier = Modifier.width(16.dp))
                 StatusOrder(statusItemHistory = statusItemHistory)
                 Box(modifier = Modifier.weight(1f))
-                PillWidget(color = LightGrey, text = stringResource(R.string.detail), textColor = MaterialTheme.colors.onBackground, modifier = Modifier.clickable { onClickDetail() })
+                PillWidget(color = LightGrey, text = stringResource(R.string.detail), textColor = Black, modifier = Modifier.clickable { onClickDetail() })
             }
         }
     }

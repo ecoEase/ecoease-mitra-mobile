@@ -10,6 +10,7 @@ import android.util.Log
 import androidx.core.app.NotificationCompat
 import com.bangkit.ecoeasemitra.MainActivity
 import com.bangkit.ecoeasemitra.R
+import com.bangkit.ecoeasemitra.data.model.request.Notification
 import com.google.firebase.messaging.FirebaseMessagingService
 import com.google.firebase.messaging.RemoteMessage
 
@@ -37,7 +38,8 @@ class FCMService : FirebaseMessagingService() {
         val notificationBuilder = NotificationCompat.Builder(applicationContext,
             NOTIFICATION_CHANNEL_ID
         )
-            .setSmallIcon(R.drawable.ic_launcher_foreground)
+            .setSmallIcon(R.drawable.ecoease_icon)
+            .setPriority(0)
             .setContentTitle(title)
             .setContentText(messageBody)
             .setContentIntent(contentPendingIntent)

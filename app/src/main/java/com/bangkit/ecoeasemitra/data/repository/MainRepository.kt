@@ -405,6 +405,17 @@ class MainRepository(
         }
     }
 
+    suspend fun getChatroomDetail(roomId: String): Flow<ChatRoomItem>{
+        try {
+            val tokenAuth = datastore.getAuthToken().first()
+            val response = chatRoomApiService.getDetailChatroom(token = tokenAuth, roomId = roomId)
+            if(response.data == null) throw Exception(response.message)
+            return flowOf(response.data)
+        }catch (e: Exception){
+            throw e
+        }
+    }
+
     //FCM to handle notification
     suspend fun setFCMToken(id: String? = null, token: String) {
         try {

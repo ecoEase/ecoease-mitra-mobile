@@ -48,4 +48,5 @@
     <string name="register">registrasi</string>
     <string name="take_order">ambil order</string>
     <string name="check_order_history">lihat history order</string>
+    <string name="delete_chatroom_warning">Anda yakin? Chatroom yg sudah terhapus tidak bisa dipulihkan lagi</string>
 </resources>

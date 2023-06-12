@@ -31,6 +31,7 @@ import com.bangkit.ecoeasemitra.data.firebase.FireBaseRealtimeDatabase.getCurren
 import com.bangkit.ecoeasemitra.data.model.Message
 import com.bangkit.ecoeasemitra.data.model.request.FCMNotification
 import com.bangkit.ecoeasemitra.data.model.request.Notification
+import com.bangkit.ecoeasemitra.data.remote.responseModel.chatroom.ChatRoomItem
 import com.bangkit.ecoeasemitra.data.room.model.User
 import com.bangkit.ecoeasemitra.ui.common.UiState
 import com.bangkit.ecoeasemitra.ui.component.ChatBubble
@@ -42,9 +43,12 @@ import kotlinx.coroutines.flow.StateFlow
 import java.util.*
 
 private val gsonPretty = GsonBuilder().setPrettyPrinting().create()
+
 @Composable
 fun ChatRoomScreen(
     roomId: String,
+    getChatroomDetail: () -> Unit,
+    chatroomDetailUiState: StateFlow<UiState<ChatRoomItem>>,
     getCurrentUser: () -> Unit,
     reloadGetCurrentUser: () -> Unit,
     userUiState: StateFlow<UiState<User>>,
@@ -53,14 +57,14 @@ fun ChatRoomScreen(
 ) {
     val context = LocalContext.current
     val messagesRef = FireBaseRealtimeDatabase.createMessageRef(roomId)
-    var message: String by rememberSaveable { mutableStateOf("") }
+    var messageTxt: String by rememberSaveable { mutableStateOf("") }
     var chats: MutableList<Message> = remember { mutableStateListOf() }
     var loading by remember { mutableStateOf(false) }
     val lazyListState = rememberLazyListState()
     var username by remember { mutableStateOf("") }
     var fullname by remember { mutableStateOf("") }
     var token: String? by remember { mutableStateOf(null) }
-    var otherUsers = remember{ mutableStateListOf<String>() }
+    var otherUsers = remember { mutableStateListOf<String>() }
 
     LaunchedEffect(Unit) {
         messagesRef.getCurrentChats().addOnCompleteListener {
@@ -91,31 +95,23 @@ fun ChatRoomScreen(
         }
     }
 
-    fun handleSendMessage() {
+    fun handleSendMessage(messageBody: Message, receiverFCMToken: String) {
         try {
             messagesRef
                 .push()
                 .setValue(
-                    Message(
-                        token = token,
-                        text = message,
-                        name = fullname,
-                        username = username,
-                        timeStamp = Date().time
-                    )
+                    messageBody
                 ) { error, _ -> if (error != null) throw Exception(error.message) }
-
-
-            val filtered = chats.filter { it.token != token }.toSet()
-            val setOfFilteredToken = filtered.map { it.token ?: "" }.toSet().toMutableStateList()
-            otherUsers = setOfFilteredToken
 
             Log.d("TAG", "handleSendMessage: ${gsonPretty.toJson(otherUsers.toList())} ")
             val notificationBody =
-                Notification(body = "message", title = username, subTitle = message)
-            otherUsers.map { fcmToken ->
-                sendNotification(FCMNotification(to = fcmToken, notification = notificationBody))
-            }
+                Notification(body = messageTxt, title = fullname, subTitle = messageTxt)
+            sendNotification(
+                FCMNotification(
+                    to = receiverFCMToken,
+                    notification = notificationBody
+                )
+            )
         } catch (e: Exception) {
             Toast.makeText(
                 context,
@@ -123,28 +119,34 @@ fun ChatRoomScreen(
                 Toast.LENGTH_SHORT
             ).show()
         } finally {
-            message = ""
+            messageTxt = ""
         }
     }
 
-    fun setUsername(user: User) {
-        fullname = "${user.firstName} ${user.lastName}"
-        username = "${user.email}"
+    fun setUsername(firstname: String, lastname: String, email: String) {
+        fullname = "$firstname $lastname"
+        username = email
     }
 
     val animatedIconBgColor by animateColorAsState(
-        targetValue = if (message.isNotEmpty()) MaterialTheme.colors.primary else MaterialTheme.colors.secondary,
+        targetValue = if (messageTxt.isNotEmpty()) MaterialTheme.colors.primary else MaterialTheme.colors.secondary,
         animationSpec = tween(200)
     )
 
-    userUiState.collectAsState().value.let { uiState ->
+    chatroomDetailUiState.collectAsState().value.let { uiState ->
         when (uiState) {
             is UiState.Loading -> {
                 Loader(modifier = Modifier.fillMaxWidth())
-                getCurrentUser()
+                getChatroomDetail()
             }
             is UiState.Success -> {
-                setUsername(uiState.data)
+                //change if for user app, using user, if for mitra app using mitra
+                setUsername(
+                    firstname = uiState.data.mitra.firstName,
+                    lastname = uiState.data.mitra.lastName,
+                    email = uiState.data.mitra.email
+                )
+
                 Column(modifier = modifier.fillMaxSize()) {
                     Column(modifier = Modifier.weight(1f)) {
                         AnimatedVisibility(
@@ -184,20 +186,31 @@ fun ChatRoomScreen(
                     ) {
                         TextInput(
                             placeHolder = "Type message",
-                            value = message,
-                            onValueChange = { it -> message = it },
+                            value = messageTxt,
+                            onValueChange = { it -> messageTxt = it },
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .padding(end = 52.dp)
                         )
                         IconButton(
-                            onClick = { handleSendMessage() }, modifier = Modifier
+                            onClick = {
+                                handleSendMessage(
+                                    messageBody = Message(
+                                        token = token,
+                                        text = messageTxt,
+                                        name = fullname,
+                                        username = username,
+                                        timeStamp = Date().time
+                                    ),
+                                    receiverFCMToken = uiState.data.user.fcmToken//because this is mitra app, token receiver must be from user
+                                )
+                            }, modifier = Modifier
                                 .size(48.dp)
                                 .clip(RoundedCornerShape(32.dp))
                                 .background(animatedIconBgColor)
                                 .padding(8.dp)
                                 .align(Alignment.CenterEnd),
-                            enabled = message.isNotEmpty()
+                            enabled = messageTxt.isNotEmpty()
                         ) {
                             Icon(
                                 Icons.Default.Send,

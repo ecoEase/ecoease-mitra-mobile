@@ -5,8 +5,8 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.bangkit.ecoeasemitra.data.event.MyEvent
 import com.bangkit.ecoeasemitra.data.model.request.FCMNotification
+import com.bangkit.ecoeasemitra.data.model.request.Notification
 import com.bangkit.ecoeasemitra.data.remote.responseModel.chatroom.ChatRoomItem
-import com.bangkit.ecoeasemitra.data.remote.responseModel.chatroom.ChatroomResponse
 import com.bangkit.ecoeasemitra.data.repository.MainRepository
 import com.bangkit.ecoeasemitra.data.room.model.User
 import com.bangkit.ecoeasemitra.ui.common.UiState
@@ -22,8 +22,11 @@ class MessageViewModel(private val repository: MainRepository) : ViewModel() {
     val eventFlow = eventChannel.receiveAsFlow()
     private var _user: MutableStateFlow<UiState<User>> = MutableStateFlow(UiState.Loading)
     private var _chatrooms: MutableStateFlow<UiState<List<ChatRoomItem>>> = MutableStateFlow(UiState.Loading)
+    private var _detailChatroom: MutableStateFlow<UiState<ChatRoomItem>> = MutableStateFlow(UiState.Loading)
+
     val user: StateFlow<UiState<User>> = _user
     val chatrooms: StateFlow<UiState<List<ChatRoomItem>>> = _chatrooms
+    val detailChatrooms: StateFlow<UiState<ChatRoomItem>> = _detailChatroom
 
     // TODO: add on reload chatrooms 
     fun getCurrentUser() {
@@ -42,20 +45,8 @@ class MessageViewModel(private val repository: MainRepository) : ViewModel() {
             }
         }
     }
-
     fun reloadCurrentUser() {
         _user.value = UiState.Loading
-    }
-
-    private fun subscribeToChatroom() {
-        viewModelScope.launch(Dispatchers.IO) {
-            try {
-//                _user = repository.getUser()
-                //get chatrooms
-            } catch (e: Exception) {
-                eventChannel.send(MyEvent.MessageEvent("error: ${e.message}"))
-            }
-        }
     }
 
     fun createChatroom(targetUserId: String) {
@@ -72,16 +63,15 @@ class MessageViewModel(private val repository: MainRepository) : ViewModel() {
         }
     }
 
-    fun deleteChatroom(roomKey: String, roomId: String, onSuccess: () -> Unit) {
+    fun deleteChatroom(roomKey: String, roomId: String) {
+        Log.d("TAG", "deleteChatroom: $roomKey $roomId")
         viewModelScope.launch(Dispatchers.IO) {
             try {
                 repository.deleteChatroom(roomKey, roomId).catch { error ->
                     eventChannel.send(MyEvent.MessageEvent("error: ${error.message}"))
                 }.collect {
                     eventChannel.send(MyEvent.MessageEvent("success delete chat room"))
-                    withContext(Dispatchers.IO) {
-                        onSuccess()
-                    }
+                    _chatrooms.value = UiState.Loading
                 }
             } catch (e: Exception) {
                 eventChannel.send(MyEvent.MessageEvent("error: ${e.message}"))
@@ -91,6 +81,7 @@ class MessageViewModel(private val repository: MainRepository) : ViewModel() {
 
     fun getChatrooms() {
         viewModelScope.launch(Dispatchers.IO) {
+            delay(200)
             try {
                 repository.getChatRooms().catch { error ->
                     _chatrooms.value = UiState.Error("error: ${error.message}")
@@ -105,12 +96,26 @@ class MessageViewModel(private val repository: MainRepository) : ViewModel() {
         }
     }
 
+    fun getDetailChatroom(roomId: String){
+        viewModelScope.launch(Dispatchers.IO) {
+            try {
+                repository.getChatroomDetail(roomId).catch { error ->
+                    _detailChatroom.value = UiState.Error("error: ${error.message}")
+                    eventChannel.send(MyEvent.MessageEvent("error: ${error.message}"))
+                }.collect {
+                    _detailChatroom.value = UiState.Success(it)
+                }
+            }catch (e: Exception){
+                eventChannel.send(MyEvent.MessageEvent("error: ${e.message}"))
+            }
+        }
+    }
+
     fun sendNotification(bodyMessage: FCMNotification) {
         viewModelScope.launch {
             try {
                 repository.sendNotification(bodyMessage)
             } catch (e: Exception) {
-                Log.d("TAG", "sendNotifsendNotif: ${e.message}")
                 eventChannel.send(MyEvent.MessageEvent("error: ${e.message}"))
             }
         }

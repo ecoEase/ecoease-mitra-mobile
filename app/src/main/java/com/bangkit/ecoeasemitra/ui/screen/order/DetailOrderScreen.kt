@@ -38,6 +38,7 @@ fun DetailOrderScreen(
     onReloadDetailOrder: () -> Unit,
     onUpdateOrderStatus: (Order, StatusOrderItem, () -> Unit) -> Unit,
     onCreateNewChatroom: (String) -> Unit,
+    sendNotification: (token: String, message: String) -> Unit,
     eventFlow: Flow<MyEvent>,
     createChatroomEventFlow: Flow<MyEvent>,
     modifier: Modifier = Modifier,
@@ -49,6 +50,15 @@ fun DetailOrderScreen(
 
     LaunchedEffect(Unit) {
         eventFlow.collect { event ->
+            when (event) {
+                is MyEvent.MessageEvent -> Toast.makeText(
+                    context,
+                    event.message,
+                    Toast.LENGTH_SHORT
+                ).show()
+            }
+        }
+        createChatroomEventFlow.collect { event ->
             when (event) {
                 is MyEvent.MessageEvent -> Toast.makeText(
                     context,
@@ -77,7 +87,9 @@ fun DetailOrderScreen(
                     onUpdateOrderStatus = onUpdateOrderStatus,
                     order = uiState.data.order,
                     address = uiState.data.address,
+                    user = uiState.data.user,
                     mitra = uiState.data.mitra,
+                    sendNotification = sendNotification,
                     modifier = modifier,
                     myId = userStateFlow.collectAsState().value?.id ?: ""
                 )
@@ -98,8 +110,10 @@ fun OrderDetailContent(
     onCreateNewChatroom: (String) -> Unit,
     order: Order,
     address: Address,
+    user: User,
     mitra: Mitra?,
     myId: String,
+    sendNotification: (token: String, message: String) -> Unit,
     onUpdateOrderStatus: (Order, StatusOrderItem, () -> Unit) -> Unit,
     listGarbage: List<GarbageTransactionWithDetail>,
     modifier: Modifier = Modifier,
@@ -132,21 +146,25 @@ fun OrderDetailContent(
                     StatusOrderItem.TAKEN
                 ) { navHostController.navigate(Screen.Success.createRoute("Berhasil pickup order🎉")) }
                 onCreateNewChatroom(order.userId)
+                sendNotification(user.fcmToken ?: "", "Pesananmu sudah diambil oleh mitra kami.")
             }
             order.status == StatusOrderItem.TAKEN && !isCancelOrder -> onUpdateOrderStatus(
                 order,
                 StatusOrderItem.ON_PROCESS
             ) {
                 navHostController.navigate(Screen.Success.createRoute("Berhasil mengubah status order (on process)"))
+                sendNotification(user.fcmToken ?: "", "Pesananmu sudah diproses oleh mitra kami, harap tunggu ya.")
             }
             order.status == StatusOrderItem.ON_PROCESS && !isCancelOrder -> onUpdateOrderStatus(
                 order,
                 StatusOrderItem.FINISHED,
             ) {
                 navHostController.navigate(Screen.Success.createRoute("Berhasil menyelesaikan order 🎉"))
+                sendNotification(user.fcmToken ?: "", "Hore! Pesananmu sudah selesai.")
             }
             isCancelOrder -> onUpdateOrderStatus(order, StatusOrderItem.CANCELED) {
                 navHostController.navigate(Screen.History.route)
+                sendNotification(user.fcmToken ?: "", "Maaf, pesananmu dibatalkan oleh mitra kami 😢")
             }
         }
     }
