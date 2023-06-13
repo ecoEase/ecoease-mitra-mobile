@@ -167,7 +167,7 @@ class MainActivity : ComponentActivity() {
                                 MapScreen(
                                     navHostController = navController,
                                     availableOrderStateFlow = orderViewModel.availableOrders,
-                                    loadAvailableOrders = { orderViewModel.loadAvailableOrder() }
+                                    loadAvailableOrders = { orderViewModel.loadAvailableOrder() },
                                 )
                             }
                             composable(Screen.Auth.route){

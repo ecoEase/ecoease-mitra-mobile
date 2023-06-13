@@ -20,7 +20,7 @@ class ViewModelFactory(private val repository: MainRepository): ViewModelProvide
             modelClass.isAssignableFrom(RegisterViewModel::class.java) -> RegisterViewModel(repository) as T
             modelClass.isAssignableFrom(SplashViewModel::class.java) -> SplashViewModel(repository) as T
             modelClass.isAssignableFrom(UserViewModel::class.java) -> UserViewModel(repository) as T
-            else -> throw java.lang.IllegalArgumentException("Unknown ViewModel class ${modelClass.name}")
+            else -> throw java.lang.IllegalArgumentException("Unknown ViewModel clss ${modelClass.name}")
         }
     }
 }
