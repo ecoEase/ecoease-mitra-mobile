@@ -8,24 +8,33 @@ EcoEase is project focus on garbage management. Garbage management is rooting pr
 
 1. Make sure your phone's android version is above 8.0 version (Android Oreo).
 2. Download from .apk file from this repository, or using this link.
-3. In order to use feature like make order, you need to give location permission so our app can pin point your location and show the orders in map screen.
-4. Don't forget to have proper internet connection so you don't have problem while making garbage order or taking garbage order.
+3. Don't forget to have proper internet connection in order to use our feature such as pickup order, processing order, cancel order, and chat feature.
 
 ## Preview 👏
 
-dashboard
+![dashboard screen](https://i.imgur.com/sCNMSBm.gif) ![profile screen](https://i.imgur.com/UtUbf7H.gif)
 
-order history
+### Dashboard and Profil Screen
 
-order detail
+![order history and detail order screen](https://i.imgur.com/C4Ko5Vs.gif)
 
-map
+### Order History And Detail
 
-chats
+![pickup available order](https://i.imgur.com/8RR3vRF.gif)
 
-chatroom
+### Pickup Available Order
 
-profile
+![chatroom and chats screen](https://i.imgur.com/Od2EXLh.gif)
+
+### Chatroom and Chats Screen
+
+![processing picked order](https://i.imgur.com/5U1iQbP.gif)
+
+### Processing Picked Order
+
+![cancel order](https://i.imgur.com/3ZJl9Gr.gif)
+
+### Cancel Picked Order
 
 ## Mobile Tech Stack 😎
 
@@ -34,7 +43,6 @@ profile
 | Lottie                     | [Documentation](https://github.com/airbnb/lottie-android/)                                   |
 | Firebase Realtime Database | [Documentation](https://firebase.google.com/docs/database/android/start)                     |
 | Firebase Cloud Messaging   | [Documentation](https://firebase.google.com/docs/cloud-messaging/android/client)             |
-| CameraX                    | [Documentation](https://developer.android.com/training/camerax)                              |
 | SplashScreen               | [Documentation](https://developer.android.com/develop/ui/views/launch/splash-screen/migrate) |
 | Google Maps                | [Documentation](https://developer.android.com/training/maps)                                 |
 | Room                       | [Documentation](https://developer.android.com/training/data-storage/room)                    |
