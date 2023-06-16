@@ -7,7 +7,7 @@ EcoEase is project focus on garbage management. Garbage management is rooting pr
 ## Getting Started 📱
 
 1. Make sure your phone's android version is above 8.0 version (Android Oreo).
-2. Download from .apk file from this repository, or using this link.
+2. Download from .apk file from this repository release section, or using this [link](https://github.com/ecoEase/ecoease-mitra-mobile/releases/tag/v1.0.0).
 3. Don't forget to have proper internet connection in order to use our feature such as pickup order, processing order, cancel order, and chat feature.
 
 ## Preview 👏
