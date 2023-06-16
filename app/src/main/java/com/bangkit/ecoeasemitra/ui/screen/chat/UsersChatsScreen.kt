@@ -8,11 +8,9 @@ import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Chat
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.pullrefresh.PullRefreshIndicator
 import androidx.compose.material.pullrefresh.pullRefresh
@@ -32,7 +30,6 @@ import com.bangkit.ecoeasemitra.data.firebase.FireBaseRealtimeDatabase.getAllRoo
 import com.bangkit.ecoeasemitra.data.model.Chatroom
 import com.bangkit.ecoeasemitra.data.remote.responseModel.chatroom.ChatRoomItem
 import com.bangkit.ecoeasemitra.helper.formatDate
-import com.bangkit.ecoeasemitra.helper.generateUUID
 import com.bangkit.ecoeasemitra.ui.common.UiState
 import com.bangkit.ecoeasemitra.ui.component.Avatar
 import com.bangkit.ecoeasemitra.ui.component.DialogBox
@@ -42,10 +39,6 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
-import java.time.LocalDateTime
-import java.time.format.DateTimeFormatter
-import java.time.format.DateTimeParseException
-
 
 private val gsonPretty = GsonBuilder().setPrettyPrinting().create()
 @RequiresApi(Build.VERSION_CODES.O)
@@ -148,6 +141,9 @@ fun UsersChatsScreen(
                                 .weight(1f)
                                 .fillMaxWidth()
                         ) {
+                            if(uiState.data.isEmpty()) Text("Chatroom masih kosong", style = MaterialTheme.typography.caption.copy(
+                                color = DarkGrey
+                            ), modifier = Modifier.align(Alignment.CenterHorizontally))
                             LazyColumn(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                                 itemsIndexed(uiState.data.toList()) { index, room ->
                                     Column {

@@ -31,6 +31,7 @@ import com.bangkit.ecoeasemitra.ui.common.UiState
 import com.bangkit.ecoeasemitra.ui.component.PillWidget
 import com.bangkit.ecoeasemitra.ui.component.RoundedButton
 import com.bangkit.ecoeasemitra.ui.component.TextInput
+import com.bangkit.ecoeasemitra.ui.theme.DarkGrey
 import com.bangkit.ecoeasemitra.ui.theme.GreenPrimary
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.StateFlow
@@ -54,22 +55,31 @@ fun RegisterScreen(
     errorEvent: Flow<MyEvent>,
     onRegister: (photoFile: File, onSuccess: () -> Unit) -> Unit,
     openGallery: () -> Unit,
+    isButtonEnabled: StateFlow<UiState<Boolean>>,
     modifier: Modifier = Modifier
 ) {
     val context = LocalContext.current
     var imageUri: Uri? by remember { mutableStateOf(null) }
 
     imageProfile.collectAsState().value.let { uiState ->
-        when(uiState){
+        when (uiState) {
             is UiState.Success -> imageUri = uiState.data.uri
-            is UiState.Error -> Log.d("TAG", "RegisterScreen image profile: ${uiState.errorMessage}")
+            is UiState.Error -> Log.d(
+                "TAG",
+                "RegisterScreen image profile: ${uiState.errorMessage}"
+            )
             is UiState.Loading -> loadImageProfile()
         }
     }
-    LaunchedEffect(Unit){
+
+    LaunchedEffect(Unit) {
         errorEvent.collect { event ->
-            when(event) {
-                is MyEvent.MessageEvent -> Toast.makeText( context, event.message, Toast.LENGTH_SHORT).show()
+            when (event) {
+                is MyEvent.MessageEvent -> Toast.makeText(
+                    context,
+                    event.message,
+                    Toast.LENGTH_SHORT
+                ).show()
             }
         }
     }
@@ -77,6 +87,7 @@ fun RegisterScreen(
     Column(
         modifier = modifier
             .fillMaxSize()
+            .fillMaxHeight()
             .verticalScroll(rememberScrollState())
             .padding(top = 32.dp)
             .padding(horizontal = 32.dp),
@@ -114,7 +125,7 @@ fun RegisterScreen(
             validate = validateLastnameInput,
             imeAction = ImeAction.Next
         )
-        PickPhotoProfileImage(openGallery = openGallery)
+        PickPhotoProfileImage(openGallery = openGallery, uiStateProfileImage = imageProfile)
         TextInput(
             label = "Email",
             onValueChange = { emailValidation.updateInputValue(it) },
@@ -145,11 +156,20 @@ fun RegisterScreen(
             validate = validatePasswordInput,
             imeAction = ImeAction.Next
         )
-        RoundedButton(text = stringResource(R.string.register), modifier = Modifier.fillMaxWidth(), onClick = {
-            onRegister(imageUri!!.toFile(context)){
-                navHostController.navigate(Screen.Auth.route)
-            }
-        }, enabled = imageUri != null)
+        RoundedButton(text = stringResource(R.string.register),
+            modifier = Modifier.fillMaxWidth(),
+            onClick = {
+                onRegister(imageUri!!.toFile(context)) {
+                    navHostController.navigate(Screen.Auth.route)
+                }
+            },
+            enabled =
+            isButtonEnabled.collectAsState().value.let { uiState ->
+                when (uiState) {
+                    is UiState.Loading -> false
+                    else -> true
+                }
+            })
         Row {
             Text("atau ")
             Text(
@@ -166,13 +186,31 @@ fun RegisterScreen(
 @Composable
 private fun PickPhotoProfileImage(
     openGallery: () -> Unit,
+    uiStateProfileImage: StateFlow<UiState<ImageCaptured>>,
     modifier: Modifier = Modifier,
-){
+) {
     Column(verticalArrangement = Arrangement.spacedBy(8.dp), modifier = modifier) {
         Text(text = "Foto profil")
         Row(horizontalArrangement = Arrangement.spacedBy(16.dp)) {
-            PillWidget(color = GreenPrimary, textColor = Color.White, text = "pilih gambar", modifier = Modifier.clickable { openGallery() })
-            Text("file name here.jpg")
+            PillWidget(
+                color = GreenPrimary,
+                textColor = Color.White,
+                text = "pilih gambar",
+                modifier = Modifier.clickable { openGallery() })
+            uiStateProfileImage.collectAsState(initial = UiState.Loading).value.let { uiState ->
+                when {
+                    uiState is UiState.Success -> Text(
+                        uiState.data.uri.toString(),
+                        style = MaterialTheme.typography.caption
+                    )
+                    else -> Text(
+                        "klik tombol disamping untuk pilih foto dari gallery",
+                        style = MaterialTheme.typography.caption.copy(
+                            color = DarkGrey
+                        )
+                    )
+                }
+            }
         }
     }
 }

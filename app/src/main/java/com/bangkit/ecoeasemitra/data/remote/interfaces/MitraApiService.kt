@@ -18,8 +18,8 @@ interface MitraApiService{
     @Multipart
     @POST("mitra")
     suspend fun register(
-        @Part("firstName") firstName: RequestBody,
-        @Part("lastName") lastName: RequestBody,
+        @Part("first_name") firstName: RequestBody,
+        @Part("last_name") lastName: RequestBody,
         @Part("email") email: RequestBody,
         @Part("password") password: RequestBody,
         @Part("phone_number") phone_number: RequestBody,

@@ -204,6 +204,7 @@ class MainActivity : ComponentActivity() {
                                     validatePasswordInput = { registerViewModel.validatePasswordInput() },
                                     errorEvent = registerViewModel.eventFlow,
                                     onRegister = { photoFile, onSuccess -> registerViewModel.register(photoFile, onSuccess) },
+                                    isButtonEnabled = registerViewModel.isEnabledButton,
                                     openGallery = {
                                         val intent = Intent().apply {
                                             action = ACTION_GET_CONTENT

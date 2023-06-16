@@ -90,7 +90,9 @@ class MessageViewModel(private val repository: MainRepository) : ViewModel() {
                     _chatrooms.value = UiState.Success(it)
                 }
             } catch (e: Exception) {
-                _chatrooms.value = UiState.Error("error: ${e.message}")
+                _chatrooms.value = if (e.message.toString().contains("HTTP 404")) UiState.Success(
+                    listOf()
+                ) else UiState.Error("error: ${e.message}")
                 eventChannel.send(MyEvent.MessageEvent("error: ${e.message}"))
             }
         }

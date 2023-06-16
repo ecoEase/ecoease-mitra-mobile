@@ -36,6 +36,8 @@ class RegisterViewModel(private val repository: MainRepository) : ViewModel() {
 
     private val _uiStateProfileImage: MutableStateFlow<UiState<ImageCaptured>> = MutableStateFlow(UiState.Loading)
     val uiStateProfileImage: StateFlow<UiState<ImageCaptured>> = _uiStateProfileImage
+    private val _isEnableButton: MutableStateFlow<UiState<Boolean>> = MutableStateFlow(UiState.Success(true))
+    val isEnabledButton: MutableStateFlow<UiState<Boolean>> = _isEnableButton
 
     fun setProfileImage(imageCaptured: ImageCaptured){
         _uiStateProfileImage.value = UiState.Loading
@@ -123,6 +125,7 @@ class RegisterViewModel(private val repository: MainRepository) : ViewModel() {
         }
         val isAllInputValid = listOf(firstnameValidation, emailValidation, phoneNumberValidation, passwordValidation).all { !it.isErrorState.value }
         if(isAllInputValid){
+            _isEnableButton.value = UiState.Loading
             viewModelScope.launch(Dispatchers.IO) {
                 try {
                     val fileRequestBody = photoProfileFile.asRequestBody("image/jpeg".toMediaTypeOrNull())
@@ -148,6 +151,8 @@ class RegisterViewModel(private val repository: MainRepository) : ViewModel() {
                     }
                 }catch (e: Exception){
                     eventChannel.send(MyEvent.MessageEvent("error: ${e.message}"))
+                }finally {
+                    _isEnableButton.value = UiState.Success(true)
                 }
             }
         }
