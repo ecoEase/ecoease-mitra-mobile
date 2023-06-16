@@ -28,6 +28,7 @@ import com.bangkit.ecoeasemitra.utils.WindowInfo
 import com.bangkit.ecoeasemitra.utils.rememberWindowInfo
 import kotlinx.coroutines.flow.StateFlow
 
+@RequiresApi(Build.VERSION_CODES.O)
 @Composable
 fun DashboardScreen(
     garbageStateFlow: StateFlow<UiState<List<Garbage>>>,
@@ -59,6 +60,7 @@ fun DashboardScreen(
     }
 }
 
+@RequiresApi(Build.VERSION_CODES.O)
 @Composable
 fun DashboardScreenPotraitContent(
     garbageStateFlow: StateFlow<UiState<List<Garbage>>>,
