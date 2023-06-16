@@ -36,6 +36,18 @@ EcoEase is project focus on garbage management. Garbage management is rooting pr
 
 ### Cancel Picked Order
 
+1. Make sure in your computer already installed Android Studio
+2. Clone this project
+3. First time you run this project, it will be give error because this project need several API keys and Firebase Realtime Database URL.
+4. To add those required API keys, first create local.properties file in root project directory.
+5. Add this variables and fill with your API keys and Firebase Realtime Database URL.
+   ```
+   google_map_api_key=<YOUR GOOGLE MAP API KEY>
+   firebase_realtime_db_url=<YOUR FIREBASE REALTIME DATABASE URL>
+   FCM_key=<YOUR FIREBASE CLOUD MESSAGING API KEY>
+   ```
+6. Now it's ready to run in your machine.
+
 ## Mobile Tech Stack 😎
 
 | Library                    | Link Documentation                                                                           |
